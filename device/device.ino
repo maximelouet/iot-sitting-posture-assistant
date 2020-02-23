@@ -1,6 +1,7 @@
 #include "esp_wpa2.h"
 #include "secrets.h"
 #include <WiFi.h>
+#include <PubSubClient.h>
 
 // PINS
 const int beepbeep = 26; // i'm a sheep
@@ -13,9 +14,44 @@ const int trigTwo = 27;
 const int acceptable_min = 4; // maximum distance in cm to be considered in range
 const int in_range_up_to = 25; // distance in cm from which alerts are disabled
 const int acceptable_bad_streak = 5; // maximum consecutive bad positions before beeping
+const char *mqtt_server = "iot.saumon.io";
+const int mqtt_port = 1883;
+const char *ssid = "eduroam"; // WiFi SSID
 
-const char ssid[] = "eduroam"; // Eduroam SSID
+
+WiFiClient wifi_client;
+PubSubClient mqtt_client(wifi_client);
 int bad_streak = 0;
+bool mqtt_published = false;
+bool alerting_position = false;
+
+
+void ringBeep() {
+  digitalWrite(beepbeep, HIGH);
+  delay(80);
+  digitalWrite(beepbeep, LOW);
+}
+
+void mqtt_reconnect() {
+  // Loop until we're reconnected
+  while (!mqtt_client.connected()) {
+    Serial.print("Attempting MQTT connection...");
+    // Create a random client ID
+    String clientId = "saumon-esp32-";
+    clientId += String(random(0xffff), HEX);
+    // Attempt to connect
+    if (mqtt_client.connect(clientId.c_str())) {
+      Serial.println("connected");
+    } else {
+      Serial.print("failed, rc=");
+      Serial.print(mqtt_client.state());
+      Serial.println(" try again in 5 seconds");
+      // Wait 5 seconds before retrying
+      delay(5000);
+    }
+  }
+}
+
 
 void setup() {
   pinMode(beepbeep, OUTPUT);
@@ -61,16 +97,25 @@ void setup() {
   Serial.println(WiFi.localIP());
 
   //// END WIFI CONNECTION
-}
 
-void ringBeep() {
-  digitalWrite(beepbeep, HIGH);
-  delay(80);
-  digitalWrite(beepbeep, LOW);
+  //// MQTT
+
+  mqtt_client.setServer(mqtt_server, mqtt_port);
+
+  //// END MQTT
 }
 
 void loop() {
   bool good_position = true;
+
+  //// MQTT
+
+  if (!mqtt_client.connected()) {
+    mqtt_reconnect();
+  }
+
+  //// END MQTT
+
 
   //// GET DISTANCES
   
@@ -101,24 +146,35 @@ void loop() {
   //// END GET DISTANCES
 
 
-  //// DISTANCE LOGIC
+  //// MAIN DISTANCE AND ALERT LOGIC
 
   bool in_range = distanceOne <= in_range_up_to && distanceTwo <= in_range_up_to;
   if (in_range) {
     good_position = distanceOne <= acceptable_min && distanceTwo <= acceptable_min;
     if (good_position) {
       bad_streak = 0;
+      if (alerting_position || !mqtt_published) {
+        mqtt_client.publish("data/position", "good");
+        mqtt_published = true;
+      }
+      alerting_position = false;
     } else {
       bad_streak++;
-      if (bad_streak > acceptable_bad_streak                          ) {
+      if (bad_streak > acceptable_bad_streak) {
+        if (!alerting_position) {
+          mqtt_client.publish("data/position", "bad");
+        }
+        alerting_position = true;
         ringBeep();
       }
     }
   } else {
     bad_streak = 0;
+    alerting_position = false;
+    mqtt_published = false;
   }
 
-  //// END DISTANCE LOGIC
+  //// END MAIN DISTANCE AND ALERT LOGIC
 
 
   //// DEBUG PRINTING
@@ -129,7 +185,9 @@ void loop() {
   Serial.print(distanceTwo);
   if (in_range) {
     Serial.print("; good position: ");
-    Serial.println(good_position ? "yes" : "no");
+    Serial.print(good_position ? "yes" : "no");
+    Serial.print("; alerting: ");
+    Serial.println(alerting_position ? "yes" : "no");
   } else {
     Serial.println("; out of range");
     delay(600);
