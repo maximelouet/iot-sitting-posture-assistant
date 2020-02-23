@@ -1,12 +1,17 @@
-const int beepbeep = 2; // i'm a sheep
+// PINS
+const int beepbeep = 26; // i'm a sheep
+const int echoOne = 12;
+const int trigOne = 13;
+const int echoTwo = 33;
+const int trigTwo = 27;
 
-const int echoOne = 8;
-const int trigOne = 9;
-const int echoTwo = 10;
-const int trigTwo = 11;
+// SETTINGS
+const int acceptable_min = 4; // maximum distance in cm to be considered in range
+const int in_range_up_to = 25; // distance in cm from which alerts are disabled
+const int acceptable_bad_streak = 5; // maximum consecutive bad positions before beeping
 
-const int acceptable_min = 5; // maximum distance in cm to be considered in range
-const int in_range_up_to = 30; // distance in cm from which alerts are disabled
+
+int bad_streak = 0;
 
 void setup() {
   pinMode(beepbeep, OUTPUT);
@@ -60,9 +65,16 @@ void loop() {
   bool in_range = distanceOne <= in_range_up_to && distanceTwo <= in_range_up_to;
   if (in_range) {
     good_position = distanceOne <= acceptable_min && distanceTwo <= acceptable_min;
-    if (!good_position) {
-      ringBeep();
+    if (good_position) {
+      bad_streak = 0;
+    } else {
+      bad_streak++;
+      if (bad_streak > acceptable_bad_streak                          ) {
+        ringBeep();
+      }
     }
+  } else {
+    bad_streak = 0;
   }
 
   //// END DISTANCE LOGIC \\\\
@@ -78,9 +90,10 @@ void loop() {
     Serial.println(good_position ? "yes" : "no");
   } else {
     Serial.println("; out of range");
+    delay(600);
   }
 
   //// END DEBUG PRINTING \\\\
 
-  delay(600);
+  delay(400);
 }
