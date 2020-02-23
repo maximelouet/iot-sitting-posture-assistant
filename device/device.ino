@@ -3,6 +3,8 @@
 #include <WiFi.h>
 #include <PubSubClient.h>
 
+#define MQTT_KEEPALIVE 10 // change default 15 seconds keepalive to match Mosquitto's 10 seconds
+
 // PINS
 const int beepbeep = 26; // i'm a sheep
 const int echoOne = 12;
