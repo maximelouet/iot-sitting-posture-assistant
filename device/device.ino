@@ -21,8 +21,8 @@ const int echoThree = 36;
 const int trigThree = 4;
 
 // SETTINGS
-const int acceptable_min = 4; // maximum distance in cm to be considered in range
-const int in_range_up_to = 25; // distance in cm from which alerts are disabled
+const int acceptable_min = 7; // maximum distance in cm to be considered in range
+const int in_range_up_to = 35; // distance in cm from which alerts are disabled
 const int acceptable_bad_streak = 5; // maximum consecutive bad positions before beeping
 const char *mqtt_server = "iot.saumon.io";
 const int mqtt_port = 1883;
@@ -227,10 +227,10 @@ void loop() {
     Serial.println(alerting_position ? "yes" : "no");
   } else {
     Serial.println("; out of range");
-    delay(600);
+    delay(700);
   }
 
   //// END DEBUG PRINTING
 
-  delay(400);
+  delay(800);
 }
