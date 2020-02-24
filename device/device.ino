@@ -6,11 +6,11 @@
 #define MQTT_KEEPALIVE 10 // change default 15 seconds keepalive to match Mosquitto's 10 seconds
 
 // PINS
-const int beepbeep = 26; // i'm a sheep
-const int echoOne = 12;
-const int trigOne = 13;
-const int echoTwo = 33;
-const int trigTwo = 27;
+const int beepbeep = 21; // i'm a sheep
+const int echoOne = 26;
+const int trigOne = 25;
+const int echoTwo = 27;
+const int trigTwo = 33;
 
 // SETTINGS
 const int acceptable_min = 4; // maximum distance in cm to be considered in range
