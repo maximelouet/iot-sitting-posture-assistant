@@ -11,6 +11,8 @@ const int echoOne = 26;
 const int trigOne = 25;
 const int echoTwo = 27;
 const int trigTwo = 33;
+const int echoThree = 36;
+const int trigThree = 4;
 
 // SETTINGS
 const int acceptable_min = 4; // maximum distance in cm to be considered in range
@@ -61,6 +63,8 @@ void setup() {
   pinMode(trigOne, OUTPUT);
   pinMode(echoTwo, INPUT);
   pinMode(trigTwo, OUTPUT);
+  pinMode(echoThree, INPUT);
+  pinMode(trigThree, OUTPUT);
   Serial.begin(115200);
 
   delay(100);
@@ -123,6 +127,7 @@ void loop() {
   
   digitalWrite(trigOne, LOW);
   digitalWrite(trigTwo, LOW);
+  digitalWrite(trigThree, LOW);
   delayMicroseconds(2);
 
   // trigger ultrasonic sensor 1
@@ -140,19 +145,28 @@ void loop() {
 
   // read travel time 2
   long durationTwo = pulseIn(echoTwo, HIGH);
-  
-  // calculate distance in cm
+
+  // trigger ultrasonic sensor 3
+  digitalWrite(trigThree, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigThree, LOW);
+
+  // read travel time 3
+  long durationThree = pulseIn(echoThree, HIGH);
+
+  // calculate distances in cm
   int distanceOne = durationOne * 0.034/2;
   int distanceTwo = durationTwo * 0.034/2;
+  int distanceThree = durationThree * 0.034/2;
 
   //// END GET DISTANCES
 
 
   //// MAIN DISTANCE AND ALERT LOGIC
 
-  bool in_range = distanceOne <= in_range_up_to && distanceTwo <= in_range_up_to;
+  bool in_range = distanceOne <= in_range_up_to && distanceTwo <= in_range_up_to && distanceThree <= in_range_up_to;
   if (in_range) {
-    good_position = distanceOne <= acceptable_min && distanceTwo <= acceptable_min;
+    good_position = distanceOne <= acceptable_min && distanceTwo <= acceptable_min && distanceThree <= acceptable_min;
     if (good_position) {
       bad_streak = 0;
       if (alerting_position || !mqtt_published) {
@@ -185,6 +199,8 @@ void loop() {
   Serial.print(distanceOne);
   Serial.print(", two ");
   Serial.print(distanceTwo);
+  Serial.print(", three ");
+  Serial.print(distanceThree);
   if (in_range) {
     Serial.print("; good position: ");
     Serial.print(good_position ? "yes" : "no");
