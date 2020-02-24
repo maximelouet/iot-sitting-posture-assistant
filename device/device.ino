@@ -3,7 +3,13 @@
 #include <WiFi.h>
 #include <PubSubClient.h>
 
-#define MQTT_KEEPALIVE 10 // change default 15 seconds keepalive to match Mosquitto's 10 seconds
+#define SHORT_BEEP 1
+#define MEDIUM_BEEP 2
+#define LONG_BEEP 3
+#define TWO_SHORT_BEEPS 4
+#define TWO_LONG_BEEPS 5
+#define THREE_SHORT_BEEPS 6
+#define THREE_LONG_BEEPS 6
 
 // PINS
 const int beepbeep = 21; // i'm a sheep
@@ -30,28 +36,40 @@ bool mqtt_published = false;
 bool alerting_position = false;
 
 
-void ringBeep() {
+void beep(int pattern) {
   digitalWrite(beepbeep, HIGH);
-  delay(80);
+  if (pattern == SHORT_BEEP) {
+    delay(80);
+  } else if (pattern == MEDIUM_BEEP) {
+    delay(150);
+  } else if (pattern == LONG_BEEP) {
+    delay(350);
+  } else if (pattern == TWO_SHORT_BEEPS) {
+    delay(80);
+    digitalWrite(beepbeep, LOW);
+    delay(150);
+    digitalWrite(beepbeep, HIGH);
+    delay(80);
+  }
   digitalWrite(beepbeep, LOW);
 }
 
 void mqtt_reconnect() {
   // Loop until we're reconnected
   while (!mqtt_client.connected()) {
-    Serial.print("Attempting MQTT connection...");
-    // Create a random client ID
-    String clientId = "saumon-esp32-";
-    clientId += String(random(0xffff), HEX);
+    Serial.print("Connecting to MQTT broker...");
+    String clientId = "saumon-iot-esp32";
     // Attempt to connect
     if (mqtt_client.connect(clientId.c_str())) {
-      Serial.println("connected");
+      Serial.println(" connected");
+      beep(TWO_SHORT_BEEPS);
     } else {
-      Serial.print("failed, rc=");
+      Serial.print(" FAILED, rc=");
       Serial.print(mqtt_client.state());
-      Serial.println(" try again in 5 seconds");
+      Serial.println(", retrying in 5 seconds");
       // Wait 5 seconds before retrying
       delay(5000);
+      beep(LONG_BEEP);
     }
   }
 }
@@ -101,6 +119,7 @@ void setup() {
   Serial.println("");
   Serial.print("WiFi connected! My IP is ");
   Serial.println(WiFi.localIP());
+  beep(TWO_SHORT_BEEPS);
 
   //// END WIFI CONNECTION
 
@@ -181,7 +200,7 @@ void loop() {
           mqtt_client.publish("data/position", "bad");
         }
         alerting_position = true;
-        ringBeep();
+        beep(SHORT_BEEP);
       }
     }
   } else {
