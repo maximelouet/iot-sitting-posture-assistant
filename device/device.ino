@@ -62,7 +62,7 @@ void mqtt_reconnect() {
     // Attempt to connect
     if (mqtt_client.connect(clientId.c_str())) {
       Serial.println(" connected");
-      beep(TWO_SHORT_BEEPS);
+      //beep(TWO_SHORT_BEEPS);
     } else {
       Serial.print(" FAILED, rc=");
       Serial.print(mqtt_client.state());
@@ -72,6 +72,15 @@ void mqtt_reconnect() {
       beep(LONG_BEEP);
     }
   }
+}
+
+void wifi_reconnect() {
+  WiFi.disconnect(true);
+  WiFi.begin(ssid); // connect to network
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+  }
+  beep(TWO_SHORT_BEEPS);
 }
 
 
@@ -114,11 +123,7 @@ void setup() {
   WiFi.setHostname("poissonnerie-esp32"); //set Hostname for your device - not necessary
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
-    Serial.print(".");
   }
-  Serial.println("");
-  Serial.print("WiFi connected! My IP is ");
-  Serial.println(WiFi.localIP());
   beep(TWO_SHORT_BEEPS);
 
   //// END WIFI CONNECTION
@@ -133,13 +138,18 @@ void setup() {
 void loop() {
   bool good_position = true;
 
-  //// MQTT
+
+  //// WIRELESS
+
+  if (WiFi.status() != WL_CONNECTED) {
+    wifi_reconnect();
+  }
 
   if (!mqtt_client.connected()) {
     mqtt_reconnect();
   }
 
-  //// END MQTT
+  //// END WIRELESS
 
 
   //// GET DISTANCES
