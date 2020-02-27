@@ -140,9 +140,6 @@ bool compute_good_position(int one, int two, int three) {
   int diff_one = one > two ? one - two : two - one;
   int diff_two = one > three ? one - three : three - one;
   int diff_three = two > three ? two - three : three - two;
-  Serial.println(diff_one);
-  Serial.println(diff_two);
-  Serial.println(diff_three);
 
   return (diff_one <= acceptable_delta && diff_two <= acceptable_delta && diff_three <= acceptable_delta);
 }
@@ -237,17 +234,17 @@ void loop() {
 
   //// DEBUG PRINTING
 
-  Serial.print("Distance one ");
+  Serial.print("Distances: ");
   Serial.print(distanceOne);
-  Serial.print(", two ");
+  Serial.print(", ");
   Serial.print(distanceTwo);
-  Serial.print(", three ");
+  Serial.print(", ");
   Serial.print(distanceThree);
   if (in_range) {
     Serial.print("; good position: ");
     Serial.print(good_position ? "yes" : "no");
     Serial.print("; alerting: ");
-    Serial.println(alerting_position ? "yes" : "no");
+    Serial.println(alerting_position ? "YES" : "no");
   } else {
     Serial.println("; out of range");
     delay(700);
