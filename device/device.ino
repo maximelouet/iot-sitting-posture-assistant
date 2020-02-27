@@ -21,7 +21,7 @@ const int echoThree = 36;
 const int trigThree = 4;
 
 // SETTINGS
-const int acceptable_min = 7; // maximum distance in cm to be considered in range
+const int acceptable_delta = 7; // maximum difference in cm between two sensors to consider a good position
 const int in_range_up_to = 35; // distance in cm from which alerts are disabled
 const int acceptable_bad_streak = 5; // maximum consecutive bad positions before beeping
 const char *mqtt_server = "iot.saumon.io";
@@ -135,6 +135,19 @@ void setup() {
   //// END MQTT
 }
 
+
+bool compute_good_position(int one, int two, int three) {
+  int diff_one = one > two ? one - two : two - one;
+  int diff_two = one > three ? one - three : three - one;
+  int diff_three = two > three ? two - three : three - two;
+  Serial.println(diff_one);
+  Serial.println(diff_two);
+  Serial.println(diff_three);
+
+  return (diff_one <= acceptable_delta && diff_two <= acceptable_delta && diff_three <= acceptable_delta);
+}
+
+
 void loop() {
   bool good_position = true;
 
@@ -195,7 +208,7 @@ void loop() {
 
   bool in_range = distanceOne <= in_range_up_to && distanceTwo <= in_range_up_to && distanceThree <= in_range_up_to;
   if (in_range) {
-    good_position = distanceOne <= acceptable_min && distanceTwo <= acceptable_min && distanceThree <= acceptable_min;
+    good_position = compute_good_position(distanceOne, distanceTwo, distanceThree);
     if (good_position) {
       bad_streak = 0;
       if (alerting_position || !mqtt_published) {
