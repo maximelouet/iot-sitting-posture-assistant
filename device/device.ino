@@ -23,6 +23,7 @@ const int trigThree = 4;
 // SETTINGS
 const int acceptable_delta = 4; // maximum difference in cm between two sensors to consider a good position
 const int in_range_up_to = 35; // distance in cm from which alerts are disabled
+const int invalid_value_from = 1500; // values greather than this will be discarded
 const int acceptable_bad_streak = 4; // maximum consecutive bad positions before beeping
 const char *mqtt_server = "iot.saumon.io";
 const int mqtt_port = 1883;
@@ -200,6 +201,16 @@ void loop() {
 
   //// END GET DISTANCES
 
+  // sometimes sensors return a very high value for no reason
+  // I believe it's when we touch the sensor (< 1cm)
+  // so I set the value to 1 to prevent "out of range"
+
+  if (distanceOne > invalid_value_from)
+    distanceOne = 1;
+  if (distanceTwo > invalid_value_from)
+    distanceTwo = 1;
+  if (distanceThree > invalid_value_from)
+    distanceThree = 1;
 
   //// MAIN DISTANCE AND ALERT LOGIC
 
