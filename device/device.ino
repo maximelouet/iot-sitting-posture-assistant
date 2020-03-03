@@ -263,5 +263,5 @@ void loop() {
 
   //// END DEBUG PRINTING
 
-  delay(800);
+  delay(600);
 }
