@@ -24,7 +24,7 @@ const int trigThree = 4;
 const int acceptable_delta = 4; // maximum difference in cm between two sensors to consider a good position
 const int in_range_up_to = 35; // distance in cm from which alerts are disabled
 const int invalid_value_from = 1500; // values greather than this will be discarded
-const int acceptable_bad_streak = 4; // maximum consecutive bad positions before beeping
+const int acceptable_bad_streak = 3; // maximum consecutive bad positions before beeping
 const char *mqtt_server = "iot.saumon.io";
 const int mqtt_port = 1883;
 const char *ssid = "eduroam"; // WiFi SSID
@@ -263,5 +263,5 @@ void loop() {
 
   //// END DEBUG PRINTING
 
-  delay(600);
+  delay(400);
 }
