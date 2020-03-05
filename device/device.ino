@@ -137,10 +137,10 @@ void setup() {
 }
 
 
-bool compute_good_position(int one, int two, int three) {
-  int diff_one = one > two ? one - two : two - one;
-  int diff_two = one > three ? one - three : three - one;
-  int diff_three = two > three ? two - three : three - two;
+bool compute_good_position(int d_one, int d_two, int d_three) {
+  int diff_one = d_one > d_two ? d_one - d_two : d_two - d_one;
+  int diff_two = d_one > d_three ? d_one - d_three : d_three - d_one;
+  int diff_three = d_two > d_three ? d_two - d_three : d_three - d_two;
 
   return (diff_one <= acceptable_delta && diff_two <= acceptable_delta && diff_three <= acceptable_delta);
 }
