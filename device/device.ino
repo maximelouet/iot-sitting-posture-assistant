@@ -13,12 +13,12 @@
 
 // PINS
 const int beepbeep = 21; // i'm a sheep
-const int echoOne = 26;
-const int trigOne = 25;
+const int echoOne = 26; // A0
+const int trigOne = 25; // A1
 const int echoTwo = 27;
 const int trigTwo = 33;
-const int echoThree = 36;
-const int trigThree = 4;
+const int echoThree = 36; // A4
+const int trigThree = 4; // A5
 
 // SETTINGS
 const int acceptable_delta = 4; // maximum difference in cm between two sensors to consider a good position
